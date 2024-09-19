@@ -3,9 +3,13 @@ use rand::thread_rng;
 use std::fs::OpenOptions;
 use std::io::Write;
 use read_input::prelude::*;
+use std::env;
+use std::io;
+
 // No need to import metadata since we're using it via std::fs::metadata
 
 fn main() {
+    let args: Vec<String> = env::args().collect();
     let cap = vec![
         "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R",
         "S", "T", "U", "V", "W", "X", "Y", "Z",
@@ -23,7 +27,10 @@ fn main() {
     chars.extend(spe);
     let mut next = String::from("y"); // Changed to String type
 
-    while next != "n" {
+    while next != "n".to_string() {
+        if args.len() > 1 {
+            next = "n".to_string()
+        }
         // Password generation
         let mut rng = thread_rng();
         let password_length = 12;
@@ -34,10 +41,26 @@ fn main() {
         }
 
         // User inputs
-        print!("What is the Site or App: ");
-        let site_app = input::<String>().get().trim().to_string();
-        print!("Username or E-mail address: ");
-        let account_name = input::<String>().get().trim().to_string();
+        if args.len() > 1 {} else {
+            print!("What is the Site or App: ");
+        }
+        let site_app = if let Some(site_arg) = env::args().nth(1) {
+            site_arg
+        } else {
+            io::stdout().flush().expect("Failed to flush stdout");
+            let input_string = input::<String>().get().trim().to_string();
+            input_string
+        };
+        if args.len() > 2 {} else {
+            print!("Username or E-mail address: ");
+        }
+        let account_name = if let Some(account_arg) = env::args().nth(2) {
+            account_arg
+        } else {
+            io::stdout().flush().expect("Failed to flush stdout");
+            let input_string = input::<String>().get().trim().to_string();
+            input_string
+        };
 
         // Check if file exists
         let file_exists = std::fs::metadata("passwords.csv");
@@ -49,7 +72,6 @@ fn main() {
             let mut file = file.expect("Unable to open file");
             let csv_line = format!("{},{},{}", site_app, account_name, pass);
             writeln!(file, "{}", csv_line).expect("Unable to write data");
-            println!("Password saved: {}", pass);
         } else {
             // File doesn't exist, create it and write headers
             let file = OpenOptions::new()
@@ -66,12 +88,20 @@ fn main() {
             // Then write the data line
             let csv_line = format!("{},{},{}", site_app, account_name, pass);
             writeln!(file, "{}", csv_line).expect("Unable to write data");
-            println!("Password saved: {}", pass);
-        }
 
-        // Prompt to continue
-        print!("Continue? (y/n): ");
-        next = input::<String>().get().trim().to_string(); // Update next without redeclaring
+            // Prompt to continue
+            if args.len() > 1 {
+
+            } else {
+                print!("Continue? (y/n): ");
+            }
+            next = if args.len() > 1 {
+                "n".to_string()
+            } else {
+                io::stdout().flush().expect("Failed to flush stdout");
+                let input_string = input::<String>().get().trim().to_string();
+                input_string
+            }
+        }
     }
 }
-
