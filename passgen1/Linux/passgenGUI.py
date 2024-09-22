@@ -9,6 +9,14 @@ def save_input():
     site_value = site.get()
     username_value = username.get()
     max_value = max_text.get()
+    match max_value:
+        case "":
+            max_value = "12"
+        case type("test"):
+            messagebox.showinfo("Password Length", "Invalid Password Length")
+            exit(0)
+        case _:
+            max_value = max_text.get()
     special_value = special_val.get()
     match special_value:
         case 1:
